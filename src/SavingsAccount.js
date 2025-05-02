@@ -1,6 +1,6 @@
 // src/SavingsAccount.js
 export const savingsState = {
-    contributions: [], // { address: string, amount: number }
+    contributions: [],  // { address: string, amount: number }
     recipients: [],     // All unique contributors
     paid: [],           // Track who already got paid
   };
@@ -28,6 +28,6 @@ export const savingsState = {
   export function calculatePayout(address) {
     const contribution = savingsState.contributions.find(c => c.address === address);
     if (!contribution) return 0;
-    return (contribution.amount * 1.1).toFixed(4); // Pay back 10% more
+    return (contribution.amount * 1.1).toFixed(4);  // Pay back 10% more
   }
   

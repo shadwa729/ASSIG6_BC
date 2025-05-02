@@ -35,19 +35,28 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      distributeFromSavings();  // Distribute ether periodically
+    }, 60000);  // 60 seconds interval
+    return () => clearInterval(interval);
+  }, []); 
+
   const connectWallet = async () => {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const signer = provider.getSigner();
+      const web3Provider = new ethers.BrowserProvider(window.ethereum); // Re-create
+      const signer = await web3Provider.getSigner();
+      setProvider(web3Provider);
       setSigner(signer);
       setAccount(accounts[0]);
-      const balance = await provider.getBalance(accounts[0]);
+      const balance = await web3Provider.getBalance(accounts[0]);
       setBalance(ethers.formatEther(balance).slice(0, 6));
     } catch (err) {
       console.error('Connection error:', err);
     }
   };
-
+  
   const contributeToSavings = async () => {
     if (!ethers.isAddress(recipient)) {
       alert('Invalid recipient address!');
@@ -74,6 +83,34 @@ function App() {
     if (!next) {
       setTxStatus("All recipients have been paid.");
       return;
+      console.log("Connected account:", account);
+console.log("Signer address:", await signer.getAddress());
+console.log("Next recipient:", next);
+console.log("Payout:", payout);
+const bulkPayout = async () => {
+  const recipients = [
+    "0xcbAAC467AA3F63a6F5757f4D0d23C79dB581fF45", 
+    "0x787d3753cDb5A665937bB6CDA8919C743f3b79CB",
+    "0xBD9220e39B5bb7ba46A57DF51d28AdDc37ff009B"
+  ];
+
+  for (let recipient of recipients) {
+    try {
+      const tx = await signer.sendTransaction({
+        to: recipient,
+        value: ethers.parseEther("0.01"),
+        gasLimit: 21000,
+      });
+      await tx.wait();
+      console.log(`Paid ${recipient}`);
+    } catch (err) {
+      console.error(`Failed to pay ${recipient}:`, err);
+    }
+  }
+
+  alert("Bulk payout completed.");
+};
+
     }
 
     const payout = calculatePayout(next);
@@ -107,6 +144,7 @@ function App() {
           <button onClick={contributeToSavings}>Send to Savings</button>
 
           <h3>Distribute Ether (Savings Account only)</h3>
+
           <button onClick={distributeFromSavings}>Distribute Payout</button>
 
           <p>{txStatus}</p>
